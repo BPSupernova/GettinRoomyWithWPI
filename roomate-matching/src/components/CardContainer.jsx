@@ -10,6 +10,7 @@ const db = [
     { name: 'Jared Dunn', email: 'jared@example.com', age: 18, bio: 'Data analyst and tech enthusiast.', interests: 'Data Analysis, Tech, Reading', img: 'https://cdn.pen.org/wp-content/uploads/2024/05/22211134/Jared-Jackson-e1576537497162.jpg' },
     { name: 'Alex Bun', email: 'alex@example.com', age: 19, bio: 'Creative and fun-loving.', interests: 'Art, Music, Travel', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH7YMk0RiwflYdOC1p_Mgi7e3yica4sbYOhQ&s' },
     { name: 'Dinesh Chugtai', email: 'dinesh@example.com', age: 20, bio: 'Innovative and curious.', interests: 'Innovation, Tech, Reading', img: 'https://media.licdn.com/dms/image/v2/C4D03AQFTL3VHkPfhFg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1517533878364?e=2147483647&v=beta&t=0Cw1jtE6oJK5o76Ci-RBeGRJYOdXiBHru1eM-T3PXVM' },
+    { name: 'Gilfoyle P.', email: 'gilfoyle@example.com', age: 23, bio: 'A Dog.', interests: 'Barking, Gaming, Pooing', img: 'https://a1cf74336522e87f135f-2f21ace9a6cf0052456644b80fa06d4f.ssl.cf2.rackcdn.com/images/characters/large/800/Bertram-Gilfoyle.Silicon-Valley.webp' }
 ]
 
 function CardContainer({ user }) {
