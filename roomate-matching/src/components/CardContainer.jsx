@@ -8,6 +8,7 @@ const db = [
     { name: 'Richard Hendricks', email: 'richard@example.com', age: 26, bio: 'Aspiring entrepreneur and coder.', interests: 'Hiking, Coding, Music', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Richard_I_of_England.png/250px-Richard_I_of_England.png' },
     { name: 'Monica Hall', email: 'monica@example.com', age: 28, bio: 'Software engineer and fitness enthusiast.', interests: 'Fitness, Coding, Travel', img: 'https://upload.wikimedia.org/wikipedia/en/0/04/Monica_%28Monica%27s_Gang%29.png' },
     { name: 'Jared Dunn', email: 'jared@example.com', age: 30, bio: 'Data analyst and tech enthusiast.', interests: 'Data Analysis, Tech, Reading', img: 'https://cdn.pen.org/wp-content/uploads/2024/05/22211134/Jared-Jackson-e1576537497162.jpg' },
+    // { name: 'Alex Bun', email: 'alex@example.com', age: 25, bio: 'Creative and fun-loving.', interests: 'Art, Music, Travel', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH7YMk0RiwflYdOC1p_Mgi7e3yica4sbYOhQ&s' }
 ]
 
 function CardContainer({ user }) {
@@ -45,6 +46,37 @@ function CardContainer({ user }) {
         return () => { mounted = false; };
     }, [user]);
 
+    // Add keyboard support for arrow keys
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            // Only handle arrow keys if we're not in an input field and have cards to swipe
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                return;
+            }
+
+            // Only allow swiping if there are cards available and not showing results
+            if (characters.length === 0 || showResults || isLoading) {
+                return;
+            }
+
+            if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                swipe('left');
+            } else if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                swipe('right');
+            }
+        };
+
+        // Add event listener
+        document.addEventListener('keydown', handleKeyDown);
+
+        // Cleanup function to remove event listener
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [characters.length, showResults, isLoading]); // Dependencies to ensure we have the latest state
+
     const onSwipe = (direction, characterToSwipe) => {
         console.log('You swiped ' + direction + ' on ' + characterToSwipe);
 
@@ -52,19 +84,19 @@ function CardContainer({ user }) {
         const character = characters.find(char => char.name === characterToSwipe);
 
         // Apply final decision logic
-        const aiThreshold = 6; // AI score threshold for approval
+        const aiThreshold = 6; // AI score threshold for approval - just an example
         const aiApproved = character.score >= aiThreshold;
         const userApproved = direction === 'right';
 
-        if (aiApproved && userApproved) {
-            // 🎉 SUCCESSFUL MATCH!
+        // User makes the ultimate call on match
+        if (userApproved) {
             const matchData = {
                 ...character,
                 userChoice: 'Yes',
                 matchedAt: new Date().toLocaleString()
             };
             setMatches(prev => [...prev, matchData]);
-            console.log(`🎉 Match! ${character.name} (Score: ${character.score})`);
+            console.log(`Match! ${character.name} (Score: ${character.score})`);
         }
 
         // Remove card from stack
@@ -200,10 +232,18 @@ function CardContainer({ user }) {
                     </TinderCard>
                 ))}
             </div>
-            {/* Buttons for programmatic swiping */}
+            <br />
+            <br />
             <div className="buttons">
-                <button onClick={() => swipe('left')}>Swipe Left</button>
-                <button onClick={() => swipe('right')}>Swipe Right</button>
+                <p>💡 <strong>Pro tip:</strong> Use ← and → arrow keys to swipe!</p>
+                <div className="button-group">
+                    <button onClick={() => swipe('left')}>
+                        ❌ Pass
+                    </button>
+                    <button onClick={() => swipe('right')}>
+                        ❤️ Like
+                    </button>
+                </div>
             </div>
         </div>
     );
