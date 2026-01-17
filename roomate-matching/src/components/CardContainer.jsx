@@ -21,7 +21,7 @@ function CardContainer({ user }) {
                 if (user) {
                     const ranked = await fetchRankedProfiles(user, db);
                     if (!mounted) return;
-                    setCharacters(ranked.map(r => r.profile));
+                    setCharacters(ranked.map(r => ({ ...r.profile, score: r.score, reason: r.reason })));
                     cardRefs.current = ranked.map(() => React.createRef());
                 } else {
                     // No user yet: show default list
@@ -68,14 +68,34 @@ function CardContainer({ user }) {
                         onCardLeftScreen={() => onCardLeftScreen(character.name)}
                         preventSwipe={['up', 'down']}
                     >
-                        <div
-                            style={{ backgroundImage: `url(${character.img})` }}
-                            className="card"
-                        >
-                            <h3>{character.name}</h3>
-                            <p>{character.bio}</p>
-                            <p>Age: {character.age}</p>
-                            <p>Interests: {character.interests}</p>
+                        <div className="card">
+                            <div
+                                className="card-image"
+                                style={{ backgroundImage: `url(${character.img})` }}
+                            >
+                                <div className="card-overlay">
+                                    <h3 className="card-name">{character.name}</h3>
+                                    <p className="card-age">Age: {character.age}</p>
+                                </div>
+                            </div>
+                            <div className="card-details">
+                                <div className="card-info">
+                                    <p className="bio">{character.bio}</p>
+                                    <div className="interests">
+                                        <strong>Interests:</strong> {character.interests}
+                                    </div>
+                                    <div className="compatibility">
+                                        <div className="compatibility-score">
+                                            <strong>Compatibility: {character.score || "N/A"}</strong>
+                                        </div>
+                                        {character.reason && (
+                                            <div className="compatibility-reason">
+                                                <em>{character.reason}</em>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </TinderCard>
                 ))}

@@ -8,7 +8,7 @@ function App() {
 
   const handleUserStart = (userData) => {
     setCurrentUser(userData)
-    
+
   }
 
   const handleReset = () => {
@@ -21,9 +21,6 @@ function App() {
         <LandingPage onStart={handleUserStart} />
       ) : (
         <div className="matcher-wrapper">
-          <button onClick={handleReset} className="back-btn">
-            ← Back
-          </button>
           <CardContainer user={currentUser} />
         </div>
       )}
