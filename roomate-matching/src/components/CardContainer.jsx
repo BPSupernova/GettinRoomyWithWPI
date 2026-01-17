@@ -5,10 +5,11 @@ import AILoadingComponent from '@/components/ui/AILoadingComponent';
 import './CardContainer.css';
 
 const db = [
-    { name: 'Richard Hendricks', email: 'richard@example.com', age: 26, bio: 'Aspiring entrepreneur and coder.', interests: 'Hiking, Coding, Music', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Richard_I_of_England.png/250px-Richard_I_of_England.png' },
-    { name: 'Monica Hall', email: 'monica@example.com', age: 28, bio: 'Software engineer and fitness enthusiast.', interests: 'Fitness, Coding, Travel', img: 'https://upload.wikimedia.org/wikipedia/en/0/04/Monica_%28Monica%27s_Gang%29.png' },
-    { name: 'Jared Dunn', email: 'jared@example.com', age: 30, bio: 'Data analyst and tech enthusiast.', interests: 'Data Analysis, Tech, Reading', img: 'https://cdn.pen.org/wp-content/uploads/2024/05/22211134/Jared-Jackson-e1576537497162.jpg' },
-    // { name: 'Alex Bun', email: 'alex@example.com', age: 25, bio: 'Creative and fun-loving.', interests: 'Art, Music, Travel', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH7YMk0RiwflYdOC1p_Mgi7e3yica4sbYOhQ&s' }
+    { name: 'Richard Hendricks', email: 'richard@example.com', age: 21, bio: 'Aspiring entrepreneur and coder.', interests: 'Hiking, Coding, Music', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Richard_I_of_England.png/250px-Richard_I_of_England.png' },
+    { name: 'Monica Hall', email: 'monica@example.com', age: 22, bio: 'Software engineer and fitness enthusiast.', interests: 'Fitness, Coding, Travel', img: 'https://upload.wikimedia.org/wikipedia/en/0/04/Monica_%28Monica%27s_Gang%29.png' },
+    { name: 'Jared Dunn', email: 'jared@example.com', age: 18, bio: 'Data analyst and tech enthusiast.', interests: 'Data Analysis, Tech, Reading', img: 'https://cdn.pen.org/wp-content/uploads/2024/05/22211134/Jared-Jackson-e1576537497162.jpg' },
+    { name: 'Alex Bun', email: 'alex@example.com', age: 19, bio: 'Creative and fun-loving.', interests: 'Art, Music, Travel', img: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH7YMk0RiwflYdOC1p_Mgi7e3yica4sbYOhQ&s' },
+    { name: 'Dinesh Chugtai', email: 'dinesh@example.com', age: 20, bio: 'Innovative and curious.', interests: 'Innovation, Tech, Reading', img: 'https://media.licdn.com/dms/image/v2/C4D03AQFTL3VHkPfhFg/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1517533878364?e=2147483647&v=beta&t=0Cw1jtE6oJK5o76Ci-RBeGRJYOdXiBHru1eM-T3PXVM' },
 ]
 
 function CardContainer({ user }) {
@@ -27,8 +28,11 @@ function CardContainer({ user }) {
                 if (user) {
                     const ranked = await fetchRankedProfiles(user, db);
                     if (!mounted) return;
-                    setCharacters(ranked.map(r => ({ ...r.profile, score: r.score, reason: r.reason })));
-                    cardRefs.current = ranked.map(() => React.createRef());
+                    setCharacters(
+                        ranked
+                            .map(r => ({ ...r.profile, score: r.score, reason: r.reason }))
+                            .reverse()
+                    ); cardRefs.current = ranked.map(() => React.createRef());
                 } else {
                     // No user yet: show default list
                     setCharacters(db);

@@ -20,44 +20,59 @@ if (!process.env.GEMINI_API_KEY) {
 app.post("/rank", async (req, res) => {
     const { userPrefs, candidates } = req.body;
 
-    const results = [];
+    if (!process.env.GEMINI_API_KEY) {
+        // Fallback simple scoring if API key missing
+        const fallback = candidates.map(c => ({
+            profile: c,
+            score: 5,
+            reason: "Fallback score"
+        }));
+        return res.json(fallback.slice(0, 5));
+    }
 
-    for (const candidate of candidates) {
+    try {
         const prompt = `
 You are a roommate compatibility expert.
 
 User preferences:
-${JSON.stringify(userPrefs)}
+${JSON.stringify(userPrefs, null, 2)}
 
-Candidate profile:
-${JSON.stringify(candidate)}
+Candidates:
+${JSON.stringify(candidates, null, 2)}
 
-Score compatibility from 1 to 10.
-Return JSON ONLY:
-{ "score": number, "reason": string }
+Instructions:
+- Score EACH candidate from 1 to 10
+- Provide a short reason
+- Preserve candidate order
+- Return JSON ONLY in this exact format:
+
+[
+  { "index": number, "score": number, "reason": string }
+]
 `;
 
-        const response = await genAI.getGenerativeModel({ model: "gemini-3-flash-preview" }).generateContent(prompt);
-        const result = await response.response;
-        const text = result.text();
+        const model = genAI.getGenerativeModel({
+            model: "gemini-3-flash-preview"
+        });
 
-        try {
-            const parsed = JSON.parse(text);
-            results.push({
-                ...parsed,
-                profile: candidate
-            });
-        } catch (err) {
-            console.error("Failed to parse Gemini response:", text);
-            results.push({ score: 0, reason: "Parsing error", profile: candidate });
-        }
+        const response = await model.generateContent(prompt);
+        const text = response.response.text();
+
+        const parsed = JSON.parse(text);
+
+        const results = parsed.map(item => ({
+            score: item.score,
+            reason: item.reason,
+            profile: candidates[item.index]
+        }));
+
+        results.sort((a, b) => b.score - a.score);
+
+        res.json(results.slice(0, 5));
+    } catch (err) {
+        console.error("Gemini ranking failed:", err);
+        res.status(500).json({ error: "Ranking failed" });
     }
-
-    // Sort descending by score
-    results.sort((a, b) => b.score - a.score);
-
-    // Return top N (e.g., top 5)
-    res.json(results.slice(0, 5));
 });
 
 app.listen(3001, () => console.log("Gemini ranking server running on port 3001"));
