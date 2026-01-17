@@ -23,18 +23,10 @@ export default function LandingPage({ onStart }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // 🔮 TODO: Gemini API Integration
-        // 1. Send formData to backend
-        // 2. Use Gemini AI to generate user preferences/profile analysis
-        // 3. Store user data in MongoDB Atlas
-        // Example API call:
-        // const response = await fetch('/api/users', {
-        //   method: 'POST',
-        //   body: JSON.stringify(formData),
-        //   headers: { 'Content-Type': 'application/json' }
-        // });
-        // const userData = await response.json();
-
+        // 🔮 TODO:
+        // 1. Send formData to backend to create user profile
+        // 2. Backend responds with success/failure
+        // 3. On success, call onStart to proceed to preranking/matching
         console.log("User submitted:", formData);
         onStart(formData);
     };
@@ -85,6 +77,7 @@ export default function LandingPage({ onStart }) {
                                     value={formData.age}
                                     onChange={handleInputChange}
                                     placeholder="Your age"
+                                    min="0"
                                     required
                                 />
                             </div>
@@ -123,7 +116,7 @@ export default function LandingPage({ onStart }) {
                 <div className="landing-features">
                     <div className="feature">
                         <span className="feature-icon">🤖</span>
-                        <h3>AI-Powered Matching</h3>
+                        <h3>AI-Powered Pre-Matching</h3>
                         <p>Using Google Gemini to analyze compatibility</p>
                     </div>
                     <div className="feature">

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TinderCard from 'react-tinder-card';
 import { fetchRankedProfiles } from '@/services/geminiService';
-import './CardContainer.css'; // We'll add some basic styling next
+import AILoadingComponent from '@/components/ui/AILoadingComponent';
+import './CardContainer.css';
 
 const db = [
     { name: 'Richard Hendricks', email: 'richard@example.com', age: 26, bio: 'Aspiring entrepreneur and coder.', interests: 'Hiking, Coding, Music', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Richard_I_of_England.png/250px-Richard_I_of_England.png' },
@@ -11,6 +12,9 @@ const db = [
 
 function CardContainer({ user }) {
     const [characters, setCharacters] = useState([]);
+    const [matches, setMatches] = useState([]); // Store successful matches
+    const [showResults, setShowResults] = useState(false); // Show results table when done
+    const [isLoading, setIsLoading] = useState(true); // Loading state for AI matching
     const cardRefs = useRef([]); // For programmatic control
 
     // Fetch ranked profiles from backend (Gemini) using user's prefs
@@ -18,6 +22,7 @@ function CardContainer({ user }) {
         let mounted = true;
         async function loadRanked() {
             try {
+                setIsLoading(true);
                 if (user) {
                     const ranked = await fetchRankedProfiles(user, db);
                     if (!mounted) return;
@@ -32,15 +37,47 @@ function CardContainer({ user }) {
                 console.error('Failed to fetch ranked profiles:', err);
                 setCharacters(db);
                 cardRefs.current = db.map(() => React.createRef());
+            } finally {
+                if (mounted) setIsLoading(false);
             }
         }
         loadRanked();
         return () => { mounted = false; };
     }, [user]);
 
-    const onSwipe = (direction, nameToDelete) => {
-        console.log('You swiped ' + direction + ' on ' + nameToDelete);
-        // Here you would likely remove the swiped item from your state
+    const onSwipe = (direction, characterToSwipe) => {
+        console.log('You swiped ' + direction + ' on ' + characterToSwipe);
+
+        // Find the full character object
+        const character = characters.find(char => char.name === characterToSwipe);
+
+        // Apply final decision logic
+        const aiThreshold = 6; // AI score threshold for approval
+        const aiApproved = character.score >= aiThreshold;
+        const userApproved = direction === 'right';
+
+        if (aiApproved && userApproved) {
+            // 🎉 SUCCESSFUL MATCH!
+            const matchData = {
+                ...character,
+                userChoice: 'Yes',
+                matchedAt: new Date().toLocaleString()
+            };
+            setMatches(prev => [...prev, matchData]);
+            console.log(`🎉 Match! ${character.name} (Score: ${character.score})`);
+        }
+
+        // Remove card from stack
+        setCharacters(prev => {
+            const newCharacters = prev.filter(char => char.name !== characterToSwipe);
+            // If no more cards, show results
+            if (newCharacters.length === 0) {
+                setShowResults(true);
+            }
+            return newCharacters;
+        });
+
+        console.log(`Decision: AI(${character.score}≥${aiThreshold})=${aiApproved}, User(${direction})=${userApproved}`);
     };
 
     const onCardLeftScreen = (name) => {
@@ -55,6 +92,69 @@ function CardContainer({ user }) {
             await cardRefs.current[activeCardIndex].current.swipe(dir); // Swipe the card programmatically
         }
     };
+
+    // Sort matches by AI score (highest first)
+    const sortedMatches = [...matches].sort((a, b) => b.score - a.score);
+
+    // Show loading screen while AI is computing
+    if (isLoading) {
+        return <AILoadingComponent message="🔍 Finding your perfect roommate matches using AI..." />;
+    }
+
+    if (showResults) {
+        return (
+            <div className="results-container">
+                <h2>🎉 Your Roommate Matches!</h2>
+                {matches.length === 0 ? (
+                    <p>No matches found. Try adjusting your preferences or swiping right more often!</p>
+                ) : (
+                    <div className="matches-table-container">
+                        <table className="matches-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Email</th>
+                                    <th>AI Score</th>
+                                    <th>Your Choice</th>
+                                    <th>Interests</th>
+                                    <th>Bio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sortedMatches.map((match, index) => (
+                                    <tr key={match.name} className="match-row">
+                                        <td><strong>{match.name}</strong></td>
+                                        <td>{match.age}</td>
+                                        <td><a href={`mailto:${match.email}`}>{match.email}</a></td>
+                                        <td><span className="score">{match.score}/10</span></td>
+                                        <td><span className="choice-yes">✅ {match.userChoice}</span></td>
+                                        <td>{match.interests}</td>
+                                        <td>{match.bio}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                        <div className="results-summary">
+                            <p><strong>Total Matches: {matches.length}</strong></p>
+                            <p>Reach out via email to connect with your potential roommates!</p>
+                        </div>
+                    </div>
+                )}
+                <button
+                    className="start-over-btn"
+                    onClick={() => {
+                        setShowResults(false);
+                        setMatches([]);
+                        // Reload characters if needed
+                        window.location.reload();
+                    }}
+                >
+                    Start Over
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div>
